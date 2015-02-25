@@ -1,0 +1,21 @@
+//SIZZLET SGTK Initialize Engine
+// v0.1.0
+@[
+
+function bootstrap()
+    python_path = Scene.Env("SGTK_SYNTHEYES_PYTHON")
+    if (!python_path)
+        Message("SGTK: No Python path set. -> SGTK_SYNTHEYES_PYTHON")
+        return
+    end
+
+    bootstrap = Scene.Env("SGTK_SYNTHEYES_BOOTSTRAP")
+    if (!bootstrap)
+        Message("SGTK: No Python bootstrap path set. -> SGTK_SYNTHEYES_BOOTSTRAP")
+        return
+    end
+
+    system((python_path bootstrap), "", 1)
+end
+
+bootstrap()
