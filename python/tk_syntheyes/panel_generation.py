@@ -70,7 +70,7 @@ class PanelGenerator(object):
         self._add_app_buttons(commands_by_app)
 
     def destroy_panel(self):
-        self._ui.clear_panel()
+        self._ui.destroy_panel()
 
     ##########################################################################################
     # context panel and UI
@@ -208,4 +208,7 @@ class AppCommand(object):
         """
         Adds an app command to the panel
         """
-        self._ui.add_button(self.name, self.callback)
+        app_instance = self.properties["app"]
+        engine = app_instance.engine
+
+        engine.ui.add_button(self.name, self.callback)

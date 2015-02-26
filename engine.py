@@ -31,18 +31,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
         self.__qt_dialogs = []
 
     def pre_app_init(self):
-        import tk_syntheyes
-        self.ui = tk_syntheyes.ui.sgtk_panel.Ui_SgtkPanel()
-        # self.ui = tk_syntheyes.ui.sgtk_panel.Ui_SgtkPanel(self._get_dialog_parent())
-        # self._create_panel()
-
-    # def _create_panel(self):
-    #     import tk_syntheyes
-    #     self.ui = tk_syntheyes.ui.sgtk_panel.Ui_SgtkPanel()
-        # buttons = [('test1', test1), ('clear', self.ui.clear_panel), ('destroy', self.ui.destroy_panel)]
-        # for button in buttons:
-        #     self.ui.add_button(*button)
-        # self.ui.show()
+        from tk_syntheyes.ui.sgtk_panel import Ui_SgtkPanel
+        self.ui = Ui_SgtkPanel()
+        self.ui.show()
 
     def post_app_init(self):
         import tk_syntheyes
@@ -56,7 +47,7 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
     ##########################################################################################
     # UI
-    
+
     def _define_qt_base(self):
         """
         This will be called at initialisation time and will allow 

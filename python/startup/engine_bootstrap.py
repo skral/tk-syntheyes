@@ -83,7 +83,7 @@ except Exception, e:
 try:
     sys.argv[0] = 'Shotgun SynthEyes'
     g_app = QtGui.QApplication(sys.argv)
-    g_app.setQuitOnLastWindowClosed(False)
+    g_app.setQuitOnLastWindowClosed(True)
     res_dir = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
     g_app.setWindowIcon(QtGui.QIcon(os.path.join(res_dir, "process_icon_256.png")))
     g_app.setApplicationName(sys.argv[0])
@@ -108,28 +108,18 @@ except Exception, e:
 
 # run userSetup.py if it exists, borrowed from Maya
 ################################################################################
-# try:
-#     for path in sys.path:
-#         scriptPath = os.path.join(path, 'userSetup.py')
-#         if os.path.isfile(scriptPath):
-#             logger.debug('Running "%s"', scriptPath)
-#             import __main__
-#             try:
-#                 execfile(scriptPath, __main__.__dict__)
-#             except:
-#                 logger.exception('Error running "%s"', scriptPath)
-# except Exception, e:
-#     logger.exception('Failed to execute userSetup.py')
-
-# def handle_show_log():
-#     from PySide import QtCore
-#     app = QtCore.QCoreApplication.instance()
-#     win = app.property('tk-syntheyes.log_console')
-#     win.setHidden(False)
-#     win.activateWindow()
-#     win.raise_()
-#
-# handle_show_log()
+try:
+    for path in sys.path:
+        scriptPath = os.path.join(path, 'userSetup.py')
+        if os.path.isfile(scriptPath):
+            logger.debug('Running "%s"', scriptPath)
+            import __main__
+            try:
+                execfile(scriptPath, __main__.__dict__)
+            except:
+                logger.exception('Error running "%s"', scriptPath)
+except Exception, e:
+    logger.exception('Failed to execute userSetup.py')
 
 logger.info("Starting PySide backend application %s", g_app)
 sys.exit(g_app.exec_())
