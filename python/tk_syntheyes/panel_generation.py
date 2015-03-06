@@ -208,6 +208,9 @@ class AppCommand(object):
         """
         Adds an app command to the panel
         """
+        if "app" not in self.properties:
+            return None
+
         app_instance = self.properties["app"]
         engine = app_instance.engine
 

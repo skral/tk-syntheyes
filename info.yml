@@ -21,8 +21,8 @@ configuration:
 requires_shotgun_fields:
 
 # More verbose description of this item 
-display_name: "Photoshop Engine"
-description: "Shotgun Integration in Photoshop"
+display_name: "SynthEyes Engine"
+description: "Shotgun Integration in SynthEyes"
 
 # Required minimum versions for this item to run
 requires_shotgun_version:

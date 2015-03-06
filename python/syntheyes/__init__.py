@@ -9,8 +9,11 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # system modules
+import os
 import sys
 import logging
+
+import SyPy
 
 # setup logging
 ################################################################################
@@ -34,3 +37,11 @@ def logging_excepthook(type, value, tb):
     logger.exception("Uncaught exception", exc_info=(type, value, tb))
     sys.__excepthook__(type, value, tb)
 sys.execpthook = logging_excepthook
+
+
+def get_existing_connection():
+    port = int(os.environ['SGTK_SYNTHEYES_PORT'])
+    pin = os.environ['SGTK_SYNTHEYES_PIN']
+    hlev = SyPy.SyLevel()
+    hlev.OpenExisting(port, pin)
+    return hlev

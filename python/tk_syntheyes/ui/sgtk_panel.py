@@ -1,4 +1,5 @@
-from PySide import QtCore, QtGui
+from PySide import QtCore
+from PySide import QtGui
 
 
 class Ui_SgtkPanel(QtGui.QDialog):
@@ -11,7 +12,18 @@ class Ui_SgtkPanel(QtGui.QDialog):
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.layout.setSpacing(10)
         self.layout.setAlignment(QtCore.Qt.AlignTop)
+        self.layout.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.buttons = []
+
+        # load up previous position
+        self.settings = QtCore.QSettings("Shotgun Software", "tk-syntheyes.sgtk_panel")
+        pos = self.settings.value("pos")
+        if pos:
+            self.move(pos)
+
+    def closeEvent(self, event):
+        self.settings.setValue("pos", self.pos())
+        event.accept()
 
     def add_button(self, name, command):
         button = QtGui.QPushButton(name, self)
