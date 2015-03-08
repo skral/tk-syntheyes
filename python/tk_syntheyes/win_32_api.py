@@ -9,7 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 """
-minimal set of win32 functions used by photoshop engine to manage toolkit UI under windows
+minimal set of win32 functions used by syntheyes engine to manage toolkit UI under windows
 """
 import ctypes
 from ctypes import wintypes

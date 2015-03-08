@@ -48,26 +48,10 @@ except Exception, e:
     msgbox("Shotgun Pipeline Toolkit failed to initialize logging:\n\n%s" % e)
     raise
 
-# setup sys path to include photoshop API
+# setup sys path to include SynthEyes API
 ################################################################################
 api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "python"))
 sys.path.insert(0, api_path)
-
-# initalize photoshop
-# try:
-#     import syntheyes
-#     # import photoshop_extension_manager
-#     logger.debug(sys.argv)
-#     # remote_port = int(sys.argv[1])
-#     # heartbeat_port = int(sys.argv[2])
-#     # syntheyes.initialize_photoshop_application(remote_port, heartbeat_port)
-#     # if we made it here, tag the extension version
-#     # bundle_version = sys.argv[3]
-#     # photoshop_extension_manager.tag(bundle_version)
-# except Exception, e:
-#     msgbox("Shotgun Pipeline Toolkit failed to initialize photoshop api:\n\n%s" % e)
-#     logger.exception('Failed to initialize photoshop api')
-#     sys.exit(1)
 
 # Startup PySide
 ################################################################################
@@ -75,7 +59,6 @@ try:
     from PySide import QtGui
     from tk_syntheyes import logging_console
 except Exception, e:
-    # photoshop.set_message("Shotgun Pipeline Toolkit failed to initialize PySide.  Is it installed?")
     logger.exception("Failed to initialize PySide.")
     sys.exit(1)
 
@@ -88,7 +71,6 @@ try:
     g_app.setWindowIcon(QtGui.QIcon(os.path.join(res_dir, "process_icon_256.png")))
     g_app.setApplicationName(sys.argv[0])
 except Exception, e:
-    # photoshop.set_message("Could not create global PySide app:\n\n%s" % e)
     logger.exception("Could not create global PySide app")
     sys.exit(1)
 
@@ -101,10 +83,8 @@ try:
     logger.addHandler(qt_handler)
     g_log.setHidden(True)
 except Exception, e:
-    # photoshop.set_message("Could not create logging console:\n\n%s" % e)
     logger.exception("Could not create logging console")
     sys.exit(1)
-
 
 # run userSetup.py if it exists, borrowed from Maya
 ################################################################################

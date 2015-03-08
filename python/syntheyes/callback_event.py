@@ -29,7 +29,7 @@ class RunCallbackEvent(QtCore.QEvent):
 
 
 class CallbackRunner(QtCore.QObject):
-    _logger = logging.getLogger('sgtk.photoshop.engine')
+    _logger = logging.getLogger('sgtk.syntheyes.engine')
 
     def event(self, event):
         try:
