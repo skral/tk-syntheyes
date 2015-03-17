@@ -1,26 +1,126 @@
+from shutil import copyfile
+import ConfigParser
 import os
+import re
 import sys
 
 import sgtk
 
-def bootstrap(engine_name, context, app_path, app_args):
+CURRENT_EXTENSION = "0.1.0"
 
-    # TODO: Where does the launcher come from?
-    launcher = sgtk.platform.Application
+
+def bootstrap(engine_name, context, app_path, app_args, launcher):
+
+    engine_path = sgtk.platform.get_engine_path(engine_name, launcher.tank, context)
+    if engine_path is None:
+        raise TankError("Path to SynthEyes engine (tk-syntheyes) could not be found.")
+
+    se_path = os.path.abspath(os.path.dirname(app_path))
+    sgtk.util.append_path_to_env_var("PYTHONPATH", se_path)
+    sys.path.append(se_path)
+
     extra_configs = launcher.get_setting("extra", {})
 
     # Get the path to the python executable
-    python_setting = {"darwin": "mac_python_path", "win32": "windows_python_path"}[sys.platform]
+    python_setting = {"darwin": "mac_python_path",
+                      "win32": "windows_python_path",
+                      "linux": "linux_python_path"}[sys.platform]
     python_path = extra_configs.get(python_setting)
     if not python_path:
-        raise sgtk.TankError("Your syntheyes app launch config is missing the extra setting %s" % python_setting)
+        raise sgtk.TankError("Your SynthEyes app launch config is missing the extra setting %s" % python_setting)
 
-    # TODO: Make sure bootstrap stub script is available to SynthEyes
+    update(engine_path)
 
     # Store data needed for bootstrapping Toolkit in env vars. Used in startup/menu.py
     os.environ["SGTK_SYNTHEYES_PYTHON"] = python_path
-    os.environ["SGTK_SYNTHEYES_BOOTSTRAP"] = os.path.join(os.path.dirname(__file__), "engine_bootstrap.py")
+    os.environ["SGTK_SYNTHEYES_BOOTSTRAP"] = os.path.join(engine_path,
+                                                          "python",
+                                                          "startup",
+                                                          "engine_bootstrap.py")
 
-    # add our startup path to the syntheyes init path
-    # startup_path = os.path.abspath(os.path.dirname(__file__))
-    # sgtk.util.append_path_to_env_var("PYTHONPATH", startup_path)
+    import SyPy
+    port = SyPy.syconfig.RandomPort(59200, 59300)
+    pin = SyPy.syconfig.RandomPin()
+    os.environ["SGTK_SYNTHEYES_PORT"] = str(port)
+    os.environ["SGTK_SYNTHEYES_PIN"] = str(pin)
+
+    new_args = ['-l', str(port), '-pin', pin,
+                '-run', '"SGTK Initialize Engine"']
+
+    xt = extra_configs.get('extreme')
+    if xt:
+        new_args.append('-xt', xt)
+
+    new_args = ' '.join(new_args)
+
+    if app_args:
+        app_args = "%s %s" % (new_args, app_args)
+    else:
+        app_args = new_args
+
+    return (app_path, app_args)
+
+
+def _user_path():
+    user_path = {"darwin": "~/Library/Application Support/SynthEyes",
+                 "win32": "%APPDATA%/SynthEyes",
+                 "linux": "~/.SynthEyes"}[sys.platform]
+    return os.path.expandvars(os.path.expanduser(user_path))
+
+def _get_conf_fname():
+    return os.path.join(_user_path(), 'sgtk_tk-syntheyes.ini')
+
+def _get_config():
+    # Setup defaults
+    config = ConfigParser.SafeConfigParser()
+    config.add_section("SGTK SynthEyes")
+    config.set("SGTK SynthEyes", "installed_version", "0.0.0")
+
+    # Load the actual config
+    config_fname = _get_conf_fname()
+    if os.path.exists(config_fname):
+        config.read(config_fname)
+
+    return config
+
+def _save_config(config):
+    # Create directory for config file if it does not exist
+    config_fname = _get_conf_fname()
+    config_dir = os.path.dirname(config_fname)
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    # Save out the updated config
+    with open(config_fname, "wb") as file_:
+        config.write(file_)
+
+def tag(version):
+    config = _get_config()
+    config.set("SGTK SynthEyes", "installed_version", version)
+    _save_config(config)
+
+def _get_user_script_dir():
+    return os.path.join(_user_path(), 'scripts')
+
+def _version_cmp(left, right):
+    def normalize(v):
+        return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
+    return cmp(normalize(left), normalize(right))
+
+def _upgrade_script(engine_path):
+    szl = "sgtk_bootstrap.szl"
+    source_szl = os.path.abspath(os.path.join(engine_path, "bootstrap", szl))
+    target_dir = _get_user_script_dir()
+    target_szl = os.path.join(target_dir, szl)
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    copyfile(source_szl, target_szl)
+
+def update(engine_path):
+    # Upgrade if the installed version is out of date
+    config = _get_config()
+    installed_version = config.get("SGTK SynthEyes", "installed_version")
+
+    if _version_cmp(CURRENT_EXTENSION, installed_version) > 0:
+        _upgrade_script(engine_path)
+        tag(CURRENT_EXTENSION)
