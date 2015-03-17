@@ -34,6 +34,7 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
     def pre_app_init(self):
         from tk_syntheyes.ui.sgtk_panel import Ui_SgtkPanel
+        # self.ui = self.show_dialog('SGTK Panel', self, Ui_SgtkPanel)
         self.ui = Ui_SgtkPanel()
 
     def post_app_init(self):
@@ -75,23 +76,21 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         return base
 
-    # def _win32_get_syntheyes_process_id(self):
-        # """
-        # Windows specific method to find the process id of SynthEyes.  This
-        # assumes that it is the parent process of this python process
-        # """
-        # if hasattr(self, "_win32_syntheyes_process_id"):
-            # return self._win32_syntheyes_process_id
-        # self._win32_syntheyes_process_id = None
+    def _win32_get_syntheyes_process_id(self):
+        """
+        Windows specific method to find the process id of SynthEyes.  This
+        assumes that it is the parent process of this python process
+        """
+        if hasattr(self, "_win32_syntheyes_process_id"):
+            return self._win32_syntheyes_process_id
+        self._win32_syntheyes_process_id = None
 
-        # this_pid = os.getpid()
-        # print this_pid
+        this_pid = os.getpid()
 
-        # from tk_syntheyes import win_32_api
-        # self._win32_syntheyes_process_id = win_32_api.find_parent_process_id(this_pid)
-        # print self._win32_syntheyes_process_id
+        from tk_syntheyes import win_32_api
+        self._win32_syntheyes_process_id = win_32_api.find_parent_process_id(this_pid)
 
-        # return self._win32_syntheyes_process_id
+        return self._win32_syntheyes_process_id
 
     def _win32_get_syntheyes_main_hwnd(self):
         """
@@ -102,10 +101,31 @@ class SyntheyesEngine(sgtk.platform.Engine):
             return self._win32_syntheyes_main_hwnd
         self._win32_syntheyes_main_hwnd = None
 
-        hlev = get_existing_connection()
-        self._win32_syntheyes_main_hwnd = hlev.Main().HWND()
+        # find SynthEyes process id:
+        se_process_id = self._win32_get_syntheyes_process_id()
+
+        if se_process_id != None:
+            # get main application window for SynthEyes process:
+            from tk_syntheyes import win_32_api
+            found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name="SynthEyes", stop_if_found=False)
+            if len(found_hwnds) == 1:
+                self._win32_syntheyes_main_hwnd = found_hwnds[0]
 
         return self._win32_syntheyes_main_hwnd
+
+    # def _win32_get_syntheyes_main_hwnd(self):
+        # """
+        # Windows specific method to find the main SynthEyes window
+        # handle (HWND)
+        # """
+        # if hasattr(self, "_win32_syntheyes_main_hwnd"):
+            # return self._win32_syntheyes_main_hwnd
+        # self._win32_syntheyes_main_hwnd = None
+
+        # hlev = get_existing_connection()
+        # self._win32_syntheyes_main_hwnd = hlev.Main().HWND()
+
+        # return self._win32_syntheyes_main_hwnd
 
     def _win32_get_proxy_window(self):
         """
@@ -241,16 +261,15 @@ class SyntheyesEngine(sgtk.platform.Engine):
             saved_state = []
             try:
                 # find all syntheyes windows and save enabled state:
-                se_hwnd = self._win32_get_syntheyes_main_hwnd()
-                # ps_process_id = self._win32_get_syntheyes_process_id()
-                # if ps_process_id != None:
-                    # found_hwnds = win_32_api.find_windows(process_id=ps_process_id, stop_if_found=False)
-                    # for hwnd in found_hwnds:
-                print se_hwnd
-                enabled = win_32_api.IsWindowEnabled(se_hwnd)
-                saved_state.append((se_hwnd, enabled))
-                if enabled:
-                    win_32_api.EnableWindow(se_hwnd, False)
+                # se_hwnd = self._win32_get_syntheyes_main_hwnd()
+                se_process_id = self._win32_get_syntheyes_process_id()
+                if se_process_id != None:
+                    found_hwnds = win_32_api.find_windows(process_id=se_process_id, stop_if_found=False)
+                    for hwnd in found_hwnds:
+                        enabled = win_32_api.IsWindowEnabled(hwnd)
+                        saved_state.append((hwnd, enabled))
+                        if enabled:
+                            win_32_api.EnableWindow(hwnd, False)
 
                 # show dialog:
                 status = dialog.exec_()
