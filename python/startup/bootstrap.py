@@ -19,9 +19,9 @@ import sgtk
 CURRENT_EXTENSION = "0.1.0"
 
 
-def bootstrap(engine_name, context, app_path, app_args, launcher):
+def bootstrap(engine_name, context, app_path, app_args, extra_args):
 
-    engine_path = sgtk.platform.get_engine_path(engine_name, launcher.tank, context)
+    engine_path = sgtk.platform.get_engine_path(engine_name, context.tank, context)
     if engine_path is None:
         raise TankError("Path to SynthEyes engine (tk-syntheyes) could not be found.")
 
@@ -29,13 +29,11 @@ def bootstrap(engine_name, context, app_path, app_args, launcher):
     sgtk.util.append_path_to_env_var("PYTHONPATH", se_path)
     sys.path.append(se_path)
 
-    extra_configs = launcher.get_setting("extra", {})
-
     # Get the path to the python executable
     python_setting = {"darwin": "mac_python_path",
                       "win32": "windows_python_path",
                       "linux": "linux_python_path"}[sys.platform]
-    python_path = extra_configs.get(python_setting)
+    python_path = extra_args.get(python_setting)
     if not python_path:
         raise sgtk.TankError("Your SynthEyes app launch config is missing the extra setting %s" % python_setting)
 
@@ -57,7 +55,7 @@ def bootstrap(engine_name, context, app_path, app_args, launcher):
     new_args = ['-l', str(port), '-pin', pin,
                 '-run', '"SGTK Initialize Engine"']
 
-    xt = extra_configs.get('extreme')
+    xt = extra_args.get('extreme')
     if xt:
         new_args.append('-xt', xt)
 
