@@ -103,13 +103,17 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         # find SynthEyes process id:
         se_process_id = self._win32_get_syntheyes_process_id()
+        self.log_debug('syntheyes pid')
+        self.log_debug(se_process_id)
 
         if se_process_id != None:
             # get main application window for SynthEyes process:
             from tk_syntheyes import win_32_api
-            found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name="SynthEyes", stop_if_found=False)
+            found_hwnds = win_32_api.find_windows(process_id=se_process_id, window_text="SynthEyes", stop_if_found=True)
             if len(found_hwnds) == 1:
                 self._win32_syntheyes_main_hwnd = found_hwnds[0]
+                self.log_debug('syntheyes main hwnd')
+                self.log_debug(self._win32_syntheyes_main_hwnd)
 
         return self._win32_syntheyes_main_hwnd
 
@@ -173,7 +177,10 @@ class SyntheyesEngine(sgtk.platform.Engine):
             # for windows, we create a proxy window parented to the
             # main application window that we can then set as the owner
             # for all Toolkit dialogs
-            parent_widget = self._win32_get_proxy_window()
+            # FIXME: Doesn't work yet and crashes the workfiles app when opening a scene file.
+            # parent_widget = self._win32_get_proxy_window()
+            from sgtk.platform.qt import QtGui
+            parent_widget = QtGui.QApplication.activeWindow()
         else:
             from sgtk.platform.qt import QtGui
             parent_widget = QtGui.QApplication.activeWindow()
@@ -265,6 +272,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
                 se_process_id = self._win32_get_syntheyes_process_id()
                 if se_process_id != None:
                     found_hwnds = win_32_api.find_windows(process_id=se_process_id, stop_if_found=False)
+                    self.log_debug('syntheyes hwnds')
+                    self.log_debug(found_hwnds)
                     for hwnd in found_hwnds:
                         enabled = win_32_api.IsWindowEnabled(hwnd)
                         saved_state.append((hwnd, enabled))
