@@ -53,6 +53,15 @@ except Exception, e:
 api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "python"))
 sys.path.insert(0, api_path)
 
+# initalize heartbeat
+try:
+    from syntheyes import heartbeat
+    heartbeat.setup()
+except Exception, e:
+    msgbox("Shotgun Pipeline Toolkit failed to initialize syntheyes heartbeat:\n\n%s" % e)
+    logger.exception('Failed to initialize syntheyes heartbeat')
+    sys.exit(1)
+
 # Startup PySide
 ################################################################################
 try:
