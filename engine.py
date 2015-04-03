@@ -34,8 +34,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
     def pre_app_init(self):
         from tk_syntheyes.ui.sgtk_panel import Ui_SgtkPanel
+        # Alternative way of starting the panel but it would be too big for now
         # self.ui = self.show_dialog('SGTK Panel', self, Ui_SgtkPanel)
-        self.ui = Ui_SgtkPanel()
+        self.ui = Ui_SgtkPanel(self._get_dialog_parent())
 
     def post_app_init(self):
         import tk_syntheyes
@@ -103,33 +104,15 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         # find SynthEyes process id:
         se_process_id = self._win32_get_syntheyes_process_id()
-        self.log_debug('syntheyes pid')
-        self.log_debug(se_process_id)
 
         if se_process_id != None:
             # get main application window for SynthEyes process:
             from tk_syntheyes import win_32_api
-            found_hwnds = win_32_api.find_windows(process_id=se_process_id, window_text="SynthEyes", stop_if_found=True)
+            found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name='SynthEyes', stop_if_found=False)
             if len(found_hwnds) == 1:
                 self._win32_syntheyes_main_hwnd = found_hwnds[0]
-                self.log_debug('syntheyes main hwnd')
-                self.log_debug(self._win32_syntheyes_main_hwnd)
 
         return self._win32_syntheyes_main_hwnd
-
-    # def _win32_get_syntheyes_main_hwnd(self):
-        # """
-        # Windows specific method to find the main SynthEyes window
-        # handle (HWND)
-        # """
-        # if hasattr(self, "_win32_syntheyes_main_hwnd"):
-            # return self._win32_syntheyes_main_hwnd
-        # self._win32_syntheyes_main_hwnd = None
-
-        # hlev = get_existing_connection()
-        # self._win32_syntheyes_main_hwnd = hlev.Main().HWND()
-
-        # return self._win32_syntheyes_main_hwnd
 
     def _win32_get_proxy_window(self):
         """
@@ -151,18 +134,21 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
             # create the proxy QWidget:
             self._win32_proxy_win = QtGui.QWidget()
-            self._win32_proxy_win.setWindowTitle('sgtk dialog owner proxy')
+            self._win32_proxy_win.setWindowTitle('SGTK Dialog Owner Proxy')
 
             proxy_win_hwnd = win_32_api.qwidget_winid_to_hwnd(self._win32_proxy_win.winId())
 
             # set no parent notify:
-            win_ex_style = win_32_api.GetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE)
-            win_32_api.SetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE, 
-                                     win_ex_style 
-                                     | win_32_api.WS_EX_NOPARENTNOTIFY)
+            try:
+                win_ex_style = win_32_api.GetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE)
+                win_32_api.SetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE, 
+                                         win_ex_style 
+                                         | win_32_api.WS_EX_NOPARENTNOTIFY)
 
-            # parent to syntheyes application window:
-            win_32_api.SetParent(proxy_win_hwnd, se_hwnd)
+                # parent to syntheyes application window:
+                win_32_api.SetParent(proxy_win_hwnd, se_hwnd)
+            except Exception as e:
+                self.log_debug(e)
 
         return self._win32_proxy_win
 
@@ -176,8 +162,16 @@ class SyntheyesEngine(sgtk.platform.Engine):
         if sys.platform == "win32":
             # for windows, we create a proxy window parented to the
             # main application window that we can then set as the owner
-            # for all Toolkit dialogs
+            # for all Toolkit dialogs.
             # FIXME: Doesn't work yet and crashes the workfiles app when opening a scene file.
+            # There seems to be an issue with SynthEyes having another
+            # child window. The parenting itself works. Checked with
+            # "Window Detective". The proxy QWidget is parented correctly.
+            # Even the show_modal stuff seems to enable and disable the window
+            # correctly.
+            # But opening a file from the workfiles app will crash SynthEyes.
+            # Either it's a problem in SynthEyes or there still is something
+            # wrong in the hack parenting in _win32_get_proxy_window().
             # parent_widget = self._win32_get_proxy_window()
             from sgtk.platform.qt import QtGui
             parent_widget = QtGui.QApplication.activeWindow()
@@ -268,12 +262,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
             saved_state = []
             try:
                 # find all syntheyes windows and save enabled state:
-                # se_hwnd = self._win32_get_syntheyes_main_hwnd()
                 se_process_id = self._win32_get_syntheyes_process_id()
                 if se_process_id != None:
-                    found_hwnds = win_32_api.find_windows(process_id=se_process_id, stop_if_found=False)
-                    self.log_debug('syntheyes hwnds')
-                    self.log_debug(found_hwnds)
+                    found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name='SynthEyes', stop_if_found=False)
                     for hwnd in found_hwnds:
                         enabled = win_32_api.IsWindowEnabled(hwnd)
                         saved_state.append((hwnd, enabled))
