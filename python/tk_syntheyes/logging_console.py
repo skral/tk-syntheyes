@@ -5,8 +5,8 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 # log console
 import cgi
@@ -38,14 +38,18 @@ class QtLogHandler(logging.Handler):
     def __init__(self, widget):
         logging.Handler.__init__(self)
         self.widget = widget
-        self.formatter = logging.Formatter("%(asctime)s [%(levelname) 8s] %(message)s")
+        pattern = "%(asctime)s [%(levelname) 8s] %(message)s"
+        self.formatter = logging.Formatter(pattern)
 
     def emit(self, record):
         message = self.formatter.format(record)
         clean = 'Unable to decode message'
-        for charset in ("utf-8", 'latin-1', 'iso-8859-1', 'us-ascii', 'windows-1252'):
+        for charset in ("utf-8", 'latin-1', 'iso-8859-1', 'us-ascii',
+                        'windows-1252'):
             try:
-                clean = cgi.escape(unicode(message, charset)).encode('ascii', 'xmlcharrefreplace')
+                clean = cgi.escape(unicode(message,
+                                           charset)).encode('ascii',
+                                                            'xmlcharrefreplace')
                 break
             except Exception:
                 continue
@@ -54,7 +58,8 @@ class QtLogHandler(logging.Handler):
             if ('[%s]' % k) in clean:
                 clean = '<font color="%s">%s</font>' % (v, clean)
                 break
-        callback_event.send_to_main_thread(append_to_log, self.widget, "<pre>%s</pre>" % clean)
+        callback_event.send_to_main_thread(append_to_log, self.widget,
+                                           "<pre>%s</pre>" % clean)
 
 
 class LogConsole(QtGui.QWidget):
@@ -71,7 +76,8 @@ class LogConsole(QtGui.QWidget):
         self.logs.setReadOnly(True)
 
         # load up previous size
-        self.settings = QtCore.QSettings("Shotgun Software", "tk-syntheyes.log_console")
+        self.settings = QtCore.QSettings("Shotgun Software",
+                                         "tk-syntheyes.log_console")
         self.resize(self.settings.value("size", QtCore.QSize(800, 400)))
 
     def closeEvent(self, event):

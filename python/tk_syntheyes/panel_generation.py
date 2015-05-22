@@ -5,12 +5,11 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 """
 Panel handling for SynthEyes
-
 """
 import os
 import sys
@@ -26,9 +25,9 @@ class PanelGenerator(object):
         self._engine = engine
         self._dialogs = []
         self._ui = self._engine.ui
-        engine_root_dir = self._engine.disk_location
+        # engine_root_dir = self._engine.disk_location
 
-    ##########################################################################################
+    ############################################################################
     # public methods
 
     def populate_panel(self):
@@ -44,7 +43,7 @@ class PanelGenerator(object):
         # now enumerate all items and create panel objects for them
         panel_items = []
         for (cmd_name, cmd_details) in self._engine.commands.items():
-             panel_items.append( AppCommand(cmd_name, cmd_details) )
+            panel_items.append(AppCommand(cmd_name, cmd_details))
 
         self._engine.log_debug("panel_items: %s", panel_items)
 
@@ -62,7 +61,7 @@ class PanelGenerator(object):
                 if app_name is None:
                     # un-parented app
                     app_name = "Other Items"
-                if not app_name in commands_by_app:
+                if app_name not in commands_by_app:
                     commands_by_app[app_name] = []
                 commands_by_app[app_name].append(cmd)
 
@@ -72,15 +71,13 @@ class PanelGenerator(object):
     def destroy_panel(self):
         self._ui.destroy_panel()
 
-    ##########################################################################################
+    ############################################################################
     # context panel and UI
     def _add_context_buttons(self):
         """
         Adds a context panel which displays the current context
         """
 
-        #ctx = self._engine.context
-        #ctx_name = str(ctx)
         # todo: display context on menu (requires sgtk core 0.12.7+)
 
         # create the panel object
@@ -99,8 +96,8 @@ class PanelGenerator(object):
     def _jump_to_sg(self):
         """
         Jump to shotgun, launch web browser
-        """        
-        url = self._engine.context.shotgun_url        
+        """
+        url = self._engine.context.shotgun_url
         webbrowser.open(url, autoraise=True)
 
     def _jump_to_fs(self):
@@ -108,12 +105,12 @@ class PanelGenerator(object):
         Jump from context to FS
         """
         # launch one window for each location on disk
-        paths = self._engine.context.filesystem_locations        
+        paths = self._engine.context.filesystem_locations
         for disk_location in paths:
 
-            # get the setting        
+            # get the setting
             system = sys.platform
-            
+
             # run the app
             if system == "linux2":
                 cmd = 'xdg-open "%s"' % disk_location
@@ -128,8 +125,7 @@ class PanelGenerator(object):
             if exit_code != 0:
                 self._engine.log_error("Failed to launch '%s'!" % cmd)
 
-
-    ##########################################################################################
+    ############################################################################
     # app panels
     def _add_app_buttons(self, commands_by_app):
         """
@@ -193,7 +189,9 @@ class AppCommand(object):
             doc_url = app.documentation_url
             # deal with nuke's inability to handle unicode. #fail
             if doc_url.__class__ == unicode:
-                doc_url = unicodedata.normalize('NFKD', doc_url).encode('ascii', 'ignore')
+                doc_url = unicodedata.normalize('NFKD',
+                                                doc_url).encode('ascii',
+                                                                'ignore')
             return doc_url
 
         return None

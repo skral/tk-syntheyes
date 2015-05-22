@@ -5,8 +5,8 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 import os
 import sys
@@ -15,14 +15,16 @@ import logging.handlers
 
 
 # platform specific alert with no dependencies
-def msgbox(msg):
+def msg_box(message):
     if sys.platform == "win32":
         import ctypes
-        MessageBox = ctypes.windll.user32.MessageBoxA
-        MessageBox(None, msg, "Shotgun", 0)
+        message_box = ctypes.windll.user32.MessageBoxA
+        message_box(None, message, "Shotgun", 0)
     elif sys.platform == "darwin":
         os.system("""osascript -e 'tell app "System Events" to activate""")
-        os.system("""osascript -e 'tell app "System Events" to display dialog "%s" with icon caution buttons "Sorry!"'""" % msg)
+        msg_ = ("""osascript -e 'tell app "System Events" to display"""
+                """dialog "%s" with icon caution buttons "Sorry!"'""" % message)
+        os.system(msg_)
 
 # setup logging
 ################################################################################
@@ -30,14 +32,21 @@ try:
     log_dir = '%s/Library/Logs/Shotgun/' % os.path.expanduser('~')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    rotating = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'tk-syntheyes.log'), maxBytes=4*1024*1024, backupCount=10)
-    rotating.setFormatter(logging.Formatter('%(asctime)s [%(levelname) 8s] %(threadName)s %(name)s: %(message)s'))
+    log_file = os.path.join(log_dir, 'tk-syntheyes.log')
+    rotating = logging.handlers.RotatingFileHandler(log_file,
+                                                    maxBytes=4*1024*1024,
+                                                    backupCount=10)
+    pattern = '%(asctime)s [%(levelname) 8s] ' \
+              '%(threadName)s %(name)s: %(message)s'
+    rotating.setFormatter(logging.Formatter(pattern))
     logger = logging.getLogger('sgtk')
     logger.addHandler(rotating)
     logger.setLevel(logging.INFO)
 
     logger = logging.getLogger('sgtk.syntheyes.PythonBootstrap')
-    logger.info('================================== Initializing Python Interpreter ===================================')
+    msg = '================================== ' \
+          'Initializing Python Interpreter ==================================='
+    logger.info(msg)
 
     # setup default exception handling to log
     def logging_excepthook(type, value, tb):
@@ -45,21 +54,24 @@ try:
         sys.__excepthook__(type, value, tb)
     sys.execpthook = logging_excepthook
 except Exception, e:
-    msgbox("Shotgun Pipeline Toolkit failed to initialize logging:\n\n%s" % e)
+    msg_box("Shotgun Pipeline Toolkit failed to initialize logging:\n\n%s" % e)
     raise
 
 # setup sys path to include SynthEyes API
 ################################################################################
-api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "python"))
+api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        "python"))
 sys.path.insert(0, api_path)
 
-# initalize heartbeat
+# Initialize heartbeat
 try:
     from syntheyes import heartbeat
     heartbeat.setup()
 except Exception, e:
-    msgbox("Shotgun Pipeline Toolkit failed to initialize syntheyes heartbeat:\n\n%s" % e)
-    logger.exception('Failed to initialize syntheyes heartbeat')
+    msg = ("Shotgun Pipeline Toolkit failed to initialize"
+           "SynthEyes heartbeat:\n\n%s" % e)
+    msg_box(msg)
+    logger.exception('Failed to initialize SynthEyes heartbeat')
     sys.exit(1)
 
 # Startup PySide
@@ -77,7 +89,8 @@ try:
     g_app = QtGui.QApplication(sys.argv)
     g_app.setQuitOnLastWindowClosed(True)
     res_dir = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
-    g_app.setWindowIcon(QtGui.QIcon(os.path.join(res_dir, "process_icon_256.png")))
+    g_app.setWindowIcon(QtGui.QIcon(os.path.join(res_dir,
+                                                 "process_icon_256.png")))
     g_app.setApplicationName(sys.argv[0])
 except Exception, e:
     logger.exception("Could not create global PySide app")

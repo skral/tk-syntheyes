@@ -5,8 +5,8 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 """
 This file is loaded automatically by SynthEyes at startup
@@ -16,38 +16,42 @@ import os
 import sys
 
 
-def msgbox(msg):
+def msg_box(message):
     if sys.platform == "win32":
         import ctypes
-        MessageBox = ctypes.windll.user32.MessageBoxA
-        MessageBox(None, msg, "Shotgun", 0)
+        message_box = ctypes.windll.user32.MessageBoxA
+        message_box(None, message, "Shotgun", 0)
     elif sys.platform == "darwin":
         os.system("""osascript -e 'tell app "System Events" to activate""")
-        os.system("""osascript -e 'tell app "System Events" to display dialog "%s"'""" % msg)
+        msg_ = ("""osascript -e 'tell app "System Events" to display"""
+                """dialog "%s" with icon caution buttons "Sorry!"'""" % message)
+        os.system(msg_)
 
 
 def bootstrap_tank():
     try:
         import sgtk
     except Exception, e:
-        msgbox("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
+        msg_box("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
         return
 
-    if not "TANK_ENGINE" in os.environ:
-        msgbox("Shotgun: Missing required environment variable TANK_ENGINE.")
+    if "TANK_ENGINE" not in os.environ:
+        msg_box("Shotgun: Missing required environment variable TANK_ENGINE.")
         return
 
     engine_name = os.environ.get("TANK_ENGINE")
     try:
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
-        msgbox("Shotgun: Could not create context! Shotgun Pipeline Toolkit will be disabled. Details: %s" % e)
+        msg = ("Shotgun: Could not create context! Shotgun Pipeline Toolkit "
+               "will be disabled. Details: %s" % e)
+        msg_box(msg)
         return
-        
-    try:    
-        engine = sgtk.platform.start_engine(engine_name, context.tank, context)
+
+    try:
+        sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
-        msgbox("Shotgun: Could not start SynthEyes engine: %s" % e)
+        msg_box("Shotgun: Could not start SynthEyes engine: %s" % e)
         return
 
     file_to_open = os.environ.get("TANK_FILE_TO_OPEN")

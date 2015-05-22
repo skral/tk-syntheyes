@@ -5,8 +5,8 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 """
 A SynthEyes engine for Toolkit.
@@ -20,12 +20,12 @@ import sgtk
 from syntheyes import get_existing_connection
 
 
-###############################################################################################
+################################################################################
 # The Toolkit SynthEyes engine
 class SyntheyesEngine(sgtk.platform.Engine):
     _logger = logging.getLogger('sgtk.syntheyes.engine')
 
-    ##########################################################################################
+    ############################################################################
     # init and destroy
     def init_engine(self):
         self._init_logging()
@@ -49,20 +49,20 @@ class SyntheyesEngine(sgtk.platform.Engine):
         self.log_debug("%s: Destroying...", self)
         self._panel_generator.destroy_panel()
 
-    ##########################################################################################
+    ############################################################################
     # UI
 
     def _define_qt_base(self):
         """
-        This will be called at initialisation time and will allow 
+        This will be called at initialisation time and will allow
         a user to control various aspects of how QT is being used
         by Toolkit. The method should return a dictionary with a number
-        of specific keys, outlined below. 
-        
+        of specific keys, outlined below.
+
         * qt_core - the QtCore module to use
         * qt_gui - the QtGui module to use
         * dialog_base - base class for to use for Toolkit's dialog factory
-        
+
         :returns: dict
         """
         base = {}
@@ -70,7 +70,7 @@ class SyntheyesEngine(sgtk.platform.Engine):
         base["qt_core"] = QtCore
         base["qt_gui"] = QtGui
         base["dialog_base"] = QtGui.QDialog
-        
+
         # tell QT to handle text strings as utf-8 by default
         utf8 = QtCore.QTextCodec.codecForName("utf-8")
         QtCore.QTextCodec.setCodecForCStrings(utf8)
@@ -89,7 +89,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
         this_pid = os.getpid()
 
         from tk_syntheyes import win_32_api
-        self._win32_syntheyes_process_id = win_32_api.find_parent_process_id(this_pid)
+        self._win32_syntheyes_process_id = win_32_api.find_parent_process_id(
+            this_pid)
 
         return self._win32_syntheyes_process_id
 
@@ -108,7 +109,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
         if se_process_id != None:
             # get main application window for SynthEyes process:
             from tk_syntheyes import win_32_api
-            found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name='SynthEyes', stop_if_found=False)
+            found_hwnds = win_32_api.find_windows(process_id=se_process_id,
+                                                  class_name='SynthEyes',
+                                                  stop_if_found=False)
             if len(found_hwnds) == 1:
                 self._win32_syntheyes_main_hwnd = found_hwnds[0]
 
@@ -116,9 +119,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
     def _win32_get_proxy_window(self):
         """
-        Windows specific method to get the proxy window that will 'own' all Toolkit dialogs.  This
-        will be parented to the main syntheyes application.  Creates the proxy window
-        if it doesn't already exist.
+        Windows specific method to get the proxy window that will 'own' all
+        Toolkit dialogs. This will be parented to the main syntheyes
+        application. Creates the proxy window if it doesn't already exist.
         """
         if hasattr(self, "_win32_proxy_win"):
             return self._win32_proxy_win
@@ -136,13 +139,15 @@ class SyntheyesEngine(sgtk.platform.Engine):
             self._win32_proxy_win = QtGui.QWidget()
             self._win32_proxy_win.setWindowTitle('SGTK Dialog Owner Proxy')
 
-            proxy_win_hwnd = win_32_api.qwidget_winid_to_hwnd(self._win32_proxy_win.winId())
+            proxy_win_hwnd = win_32_api.qwidget_winid_to_hwnd(
+                self._win32_proxy_win.winId())
 
             # set no parent notify:
             try:
-                win_ex_style = win_32_api.GetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE)
-                win_32_api.SetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE, 
-                                         win_ex_style 
+                win_ex_style = win_32_api.GetWindowLong(proxy_win_hwnd,
+                                                        win_32_api.GWL_EXSTYLE)
+                win_32_api.SetWindowLong(proxy_win_hwnd, win_32_api.GWL_EXSTYLE,
+                                         win_ex_style
                                          | win_32_api.WS_EX_NOPARENTNOTIFY)
 
                 # parent to syntheyes application window:
@@ -158,12 +163,11 @@ class SyntheyesEngine(sgtk.platform.Engine):
         show_dialog & show_modal.
         """
         # determine the parent widget to use:
-        parent_widget = None
         if sys.platform == "win32":
             # for windows, we create a proxy window parented to the
             # main application window that we can then set as the owner
             # for all Toolkit dialogs.
-            # FIXME: Doesn't work yet and crashes the workfiles app when opening a scene file.
+            # FIXME: Doesn't work. Crashes the workfiles app when opening a file
             # There seems to be an issue with SynthEyes having another
             # child window. The parenting itself works. Checked with
             # "Window Detective". The proxy QWidget is parented correctly.
@@ -178,80 +182,95 @@ class SyntheyesEngine(sgtk.platform.Engine):
         else:
             from sgtk.platform.qt import QtGui
             parent_widget = QtGui.QApplication.activeWindow()
-            
+
         return parent_widget
 
     def show_dialog(self, title, bundle, widget_class, *args, **kwargs):
         """
         Shows a non-modal dialog window in a way suitable for this engine.
-        The engine will attempt to parent the dialog nicely to the host application.
+        The engine will attempt to parent the dialog nicely to the host
+        application.
 
         :param title: The title of the window
-        :param bundle: The app, engine or framework object that is associated with this window
-        :param widget_class: The class of the UI to be constructed. This must derive from QWidget.
+        :param bundle: The app, engine or framework object that is associated
+                       with this window
+        :param widget_class: The class of the UI to be constructed. This must
+                             derive from QWidget.
 
-        Additional parameters specified will be passed through to the widget_class constructor.
+        Additional parameters specified will be passed through to the
+        widget_class constructor.
 
         :returns: the created widget_class instance
         """
         if not self.has_ui:
-            self.log_error("Sorry, this environment does not support UI display! Cannot show "
-                           "the requested window '%s'." % title)
+            msg = ('Sorry, this environment does not support UI display!'
+                   'Cannot show the requested window "%s".' % title)
+            self.log_error(msg)
             return
-        
+
         # create the dialog:
-        dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
-        
+        dialog, widget = self._create_dialog_with_widget(title, bundle,
+                                                         widget_class, *args,
+                                                         **kwargs)
+
         # Note - the base engine implementation will try to clean up
         # dialogs and widgets after they've been closed.  However this
-        # can cause a crash in syntheyes as the system may try to send
+        # can cause a crash in SynthEyes as the system may try to send
         # an event after the dialog has been deleted.
         # Keeping track of all dialogs will ensure this doesn't happen
         self.__qt_dialogs.append(dialog)
 
         # make sure the window raised so it doesn't
-        # appear behind the main syntheyes window
+        # appear behind the main SynthEyes window
         dialog.raise_()
         dialog.activateWindow()
-                    
+
         # show the dialog:
         dialog.show()
-        
+
         return widget
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
         """
-        Shows a modal dialog window in a way suitable for this engine. The engine will attempt to
-        integrate it as seamlessly as possible into the host application. This call is blocking
-        until the user closes the dialog.
+        Shows a modal dialog window in a way suitable for this engine. The
+        engine will attempt to integrate it as seamlessly as possible into the
+        host application. This call is blocking until the user closes the
+        dialog.
 
         :param title: The title of the window
-        :param bundle: The app, engine or framework object that is associated with this window
-        :param widget_class: The class of the UI to be constructed. This must derive from QWidget.
+        :param bundle: The app, engine or framework object that is associated
+                       with this window
+        :param widget_class: The class of the UI to be constructed. This must
+                             derive from QWidget.
 
-        Additional parameters specified will be passed through to the widget_class constructor.
+        Additional parameters specified will be passed through to the
+        widget_class constructor.
 
-        :returns: (a standard QT dialog status return code, the created widget_class instance)
+        :returns: (a standard QT dialog status return code, the created
+                  widget_class instance)
         """
         if not self.has_ui:
-            self.log_error("Sorry, this environment does not support UI display! Cannot show "
-                           "the requested window '%s'." % title)
-            return        
-        
+            msg = ('Sorry, this environment does not support UI display!'
+                   'Cannot show the requested window "%s".' % title)
+            self.log_error(msg)
+            return
+
         from sgtk.platform.qt import QtGui
-        
+
         # create the dialog:
-        dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
-        
+        dialog, widget = self._create_dialog_with_widget(title, bundle,
+                                                         widget_class, *args,
+                                                         **kwargs)
+
         # Note - the base engine implementation will try to clean up
         # dialogs and widgets after they've been closed. However this
-        # can cause a crash in syntheyes as the system may try to send
-        # an event after the dialog has been deleted.      
-        # Keeping track of all dialogs will ensure this doesn't happen  
+        # can cause a crash in SynthEyes as the system may try to send
+        # an event after the dialog has been deleted.
+        # Keeping track of all dialogs will ensure this doesn't happen
         self.__qt_dialogs.append(dialog)
-        
+
         # make sure the window raised so it doesn't
-        # appear behind the main syntheyes window
+        # appear behind the main SynthEyes window
         dialog.raise_()
         dialog.activateWindow()
 
@@ -264,7 +283,9 @@ class SyntheyesEngine(sgtk.platform.Engine):
                 # find all syntheyes windows and save enabled state:
                 se_process_id = self._win32_get_syntheyes_process_id()
                 if se_process_id != None:
-                    found_hwnds = win_32_api.find_windows(process_id=se_process_id, class_name='SynthEyes', stop_if_found=False)
+                    found_hwnds = win_32_api.find_windows(
+                        process_id=se_process_id, class_name='SynthEyes',
+                        stop_if_found=False)
                     for hwnd in found_hwnds:
                         enabled = win_32_api.IsWindowEnabled(hwnd)
                         saved_state.append((hwnd, enabled))
@@ -286,7 +307,7 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         return status, widget
 
-    ##########################################################################################
+    ############################################################################
     # logging
 
     def _init_logging(self):

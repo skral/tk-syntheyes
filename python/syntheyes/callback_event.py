@@ -5,8 +5,8 @@
 # This work is provided "AS IS" and subject to the MIT License included in this
 # distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the MIT License. All rights
-# not expressly granted therein are reserved by Sebastian Kral.
+# agreement to the MIT License. All rights not expressly granted therein are
+# reserved by Sebastian Kral.
 
 """
 framework for running callbacks in the main PySide GUI thread
@@ -14,6 +14,7 @@ framework for running callbacks in the main PySide GUI thread
 This is used by the logging console to update the gui on the main thread
 and so it cannot use logging itself
 """
+
 import logging
 from PySide import QtCore
 
@@ -33,7 +34,7 @@ class CallbackRunner(QtCore.QObject):
 
     def event(self, event):
         try:
-            if (getattr(event.fn, '_tkLog', True)):
+            if getattr(event.fn, '_tkLog', True):
                 self._logger.info("Callback %s", str(event.fn))
             event.fn(*event.args, **event.kwargs)
         except Exception:
@@ -45,4 +46,5 @@ g_callbackRunner = CallbackRunner()
 
 def send_to_main_thread(fn, *args, **kwargs):
     global g_callbackRunner
-    QtCore.QCoreApplication.postEvent(g_callbackRunner, RunCallbackEvent(fn, *args, **kwargs))
+    QtCore.QCoreApplication.postEvent(g_callbackRunner,
+                                      RunCallbackEvent(fn, *args, **kwargs))
