@@ -45,7 +45,7 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
 
     # Store data needed for bootstrapping Toolkit in env vars.
     # Used in startup/menu.py
-    os.environ["SGTK_SYNTHEYES_PYTHON"] = python_path
+    os.environ["SGTK_SYNTHEYES_PYTHON"] = os.path.expandvars(python_path)
     os.environ["SGTK_SYNTHEYES_BOOTSTRAP"] = os.path.join(engine_path,
                                                           "python",
                                                           "startup",
