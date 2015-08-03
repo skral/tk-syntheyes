@@ -27,7 +27,7 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
         msg = "Path to SynthEyes engine (tk-syntheyes) could not be found."
         raise TankError(msg)
 
-    se_path = os.path.abspath(os.path.dirname(app_path))
+    se_path = os.path.abspath(os.path.dirname(os.path.expandvars(app_path)))
     sgtk.util.append_path_to_env_var("PYTHONPATH", se_path)
     sys.path.append(se_path)
 
