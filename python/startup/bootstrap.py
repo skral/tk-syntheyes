@@ -20,7 +20,7 @@ CURRENT_EXTENSION = "0.1.0"
 
 
 def bootstrap(engine_name, context, app_path, app_args, extra_args):
-
+    extra_args = {'windows_python_path':"C:\Python27\python.exe"}
     engine_path = sgtk.platform.get_engine_path(engine_name, context.tank,
                                                 context)
     if engine_path is None:
@@ -37,7 +37,7 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
                       "linux": "linux_python_path"}[sys.platform]
     python_path = extra_args.get(python_setting)
     if not python_path:
-        msg = ("Your SynthEyes app launch config is missing the"
+        msg = ("Your SynthEyes app launch config is missing the "
                "extra setting %s" % python_setting)
         raise sgtk.TankError(msg)
 
@@ -45,6 +45,7 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
 
     # Store data needed for bootstrapping Toolkit in env vars.
     # Used in startup/menu.py
+    os.environ["SGTK_SYNTHEYES_PYTHON_BIN"] = os.path.expandvars(python_path)
     os.environ["SGTK_SYNTHEYES_PYTHON"] = os.path.expandvars(python_path)
     os.environ["SGTK_SYNTHEYES_BOOTSTRAP"] = os.path.join(engine_path,
                                                           "python",
@@ -56,6 +57,7 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
     pin = SyPy.syconfig.RandomPin()
     os.environ["SGTK_SYNTHEYES_PORT"] = str(port)
     os.environ["SGTK_SYNTHEYES_PIN"] = str(pin)
+    create_syntheyes_config(port, pin)
 
     new_args = ['-l', str(port), '-pin', pin,
                 '-run', '"SGTK Initialize Engine"']
@@ -72,6 +74,24 @@ def bootstrap(engine_name, context, app_path, app_args, extra_args):
         app_args = new_args
 
     return app_path, app_args
+
+def create_syntheyes_config(port, pin):
+    import json
+    user_path = _user_path()
+    print  user_path
+    yml_file_path = os.path.join(user_path,'sy_config.json')
+
+    config_dir = os.path.dirname(yml_file_path)
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+
+    # Save out the updated config
+    with open(yml_file_path, "wb") as file:
+        json.dump({"SGTK_SYNTHEYES_PORT": port, "SGTK_SYNTHEYES_PIN": pin}, file)
+
+
 
 
 def _user_path():

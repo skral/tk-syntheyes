@@ -29,7 +29,7 @@ def msg_box(message):
 # setup logging
 ################################################################################
 try:
-    log_dir = '%s/Library/Logs/Shotgun/' % os.path.expanduser('~')
+    log_dir = '%s/AppData/Roaming/Shotgun/Logs/' % os.path.expanduser('~')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     log_file = os.path.join(log_dir, 'tk-syntheyes.log')

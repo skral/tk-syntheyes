@@ -49,6 +49,7 @@ def bootstrap_tank():
         return
 
     try:
+
         sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
         msg_box("Shotgun: Could not start SynthEyes engine: %s" % e)

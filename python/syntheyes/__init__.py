@@ -40,7 +40,16 @@ def log_exception(msg, *args, **kwargs):
 def logging_excepthook(type, value, tb):
     logger.exception("Uncaught exception", exc_info=(type, value, tb))
     sys.__excepthook__(type, value, tb)
-sys.execpthook = logging_excepthook
+    sys.execpthook = logging_excepthook
+
+
+
+def _user_path():
+    user_path = {"darwin": "~/Library/Application Support/SynthEyes",
+                 "win32": "%APPDATA%/SynthEyes",
+                 "linux": "~/.SynthEyes"}[sys.platform]
+    return os.path.expandvars(os.path.expanduser(user_path))
+
 
 
 def get_existing_connection():

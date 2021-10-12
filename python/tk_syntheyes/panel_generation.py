@@ -132,6 +132,7 @@ class PanelGenerator(object):
         Add all apps to the main panel, process them one by one.
         """
         for app_name in sorted(commands_by_app.keys()):
+            self._engine.log_error("Failed to launch '%s'!" % app_name)
             if len(commands_by_app[app_name]) > 1:
                 # more than one panel entry fort his app
                 # make a sub panel and put all items in the sub panel

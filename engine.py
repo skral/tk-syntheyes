@@ -17,7 +17,7 @@ import sys
 
 import sgtk
 
-from syntheyes import get_existing_connection
+# from syntheyes import get_existing_connection
 
 
 ################################################################################
@@ -88,7 +88,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         this_pid = os.getpid()
 
-        from tk_syntheyes import win_32_api
+        # from tk_syntheyes import win_32_api
+        import win_32_api
         self._win32_syntheyes_process_id = win_32_api.find_parent_process_id(
             this_pid)
 
@@ -108,7 +109,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         if se_process_id != None:
             # get main application window for SynthEyes process:
-            from tk_syntheyes import win_32_api
+            # from tk_syntheyes import win_32_api
+            import win_32_api
             found_hwnds = win_32_api.find_windows(process_id=se_process_id,
                                                   class_name='SynthEyes',
                                                   stop_if_found=False)
@@ -133,7 +135,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
         if se_hwnd != None:
 
             from sgtk.platform.qt import QtGui
-            from tk_syntheyes import win_32_api
+            # from tk_syntheyes import win_32_api
+            import win_32_api
 
             # create the proxy QWidget:
             self._win32_proxy_win = QtGui.QWidget()
@@ -276,7 +279,8 @@ class SyntheyesEngine(sgtk.platform.Engine):
 
         status = QtGui.QDialog.Rejected
         if sys.platform == "win32":
-            from tk_syntheyes import win_32_api
+            import win_32_api
+            # from tk_syntheyes import win_32_api
 
             saved_state = []
             try:
